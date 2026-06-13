@@ -1,4 +1,5 @@
 let BACKEND_URL = 'http://localhost:8000';
+let API_KEY = 'dev_key_123'; // matches default .env API_KEYS
 
 export function setBackendUrl(url) {
   if (!url) return;
@@ -18,11 +19,20 @@ export function getBackendUrl() {
   return BACKEND_URL;
 }
 
+export function setApiKey(key) {
+  API_KEY = key ? key.trim() : '';
+}
+
+export function getApiKey() {
+  return API_KEY;
+}
+
 async function request(endpoint, options = {}) {
   const url = `${BACKEND_URL}${endpoint}`;
   
   const headers = {
     'Content-Type': 'application/json',
+    ...(API_KEY ? { 'X-API-Key': API_KEY } : {}),
     ...(options.headers || {}),
   };
 
@@ -94,6 +104,12 @@ export async function listBenchmarkResults(limit = 50) {
 
 export async function getLeaderboard(limit = 20) {
   return await request(`/leaderboard?limit=${limit}`);
+}
+
+export async function clearLeaderboard() {
+  return await request('/leaderboard', {
+    method: 'DELETE',
+  });
 }
 
 export async function deleteBenchmarkResult(resultId) {

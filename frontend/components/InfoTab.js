@@ -38,15 +38,6 @@ const SCORING = [
   },
 ];
 
-const PROD = [
-  { icon: 'server-outline',          title: 'Persistent DB',       desc: 'Swap in-memory dicts for PostgreSQL via SQLAlchemy + asyncpg.' },
-  { icon: 'list-outline',            title: 'Job Queue',            desc: 'Use Redis + Celery/RQ to handle concurrent benchmark jobs safely.' },
-  { icon: 'shield-checkmark-outline', title: 'Rate Limiting',       desc: 'Add per-IP submission caps to prevent benchmark flooding.' },
-  { icon: 'key-outline',             title: 'API Key Auth',         desc: 'Gate submissions behind developer API keys.' },
-  { icon: 'git-branch-outline',      title: 'CORS Policy',          desc: 'Restrict allow_origins to your deployed frontend domain only.' },
-  { icon: 'save-outline',            title: 'Persistence',          desc: 'Results are currently lost on every server restart.' },
-];
-
 function SectionHeader({ icon, title }) {
   return (
     <View style={styles.sectionHeader}>
@@ -91,28 +82,6 @@ export default function InfoTab() {
             </View>
           ))}
         </View>
-      </View>
-
-      {/* ── PRODUCTION ── */}
-      <View style={styles.card}>
-        <SectionHeader icon="construct-outline" title="Production Upgrade Checklist" />
-        <Text style={styles.intro}>
-          This server currently runs in prototype mode. Recommended hardening steps for production:
-        </Text>
-        {PROD.map((p, i) => (
-          <View key={p.title} style={styles.prodRow}>
-            <View style={styles.prodIconBox}>
-              <Ionicons name={p.icon} size={16} color="#06B6D4" />
-            </View>
-            <View style={styles.prodContent}>
-              <Text style={styles.prodTitle}>{p.title}</Text>
-              <Text style={styles.prodDesc}>{p.desc}</Text>
-            </View>
-            <View style={styles.prodIndex}>
-              <Text style={styles.prodIndexText}>{String(i + 1).padStart(2, '0')}</Text>
-            </View>
-          </View>
-        ))}
       </View>
     </View>
   );
@@ -219,49 +188,5 @@ const styles = StyleSheet.create({
     color: '#475569',
     fontSize: 10,
     marginTop: 1,
-  },
-
-  // ── Production ──
-  prodRow: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: 10,
-    paddingVertical: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#111F1C',
-  },
-  prodIconBox: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    backgroundColor: 'rgba(6,182,212,0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: '#1A3530',
-    flexShrink: 0,
-  },
-  prodContent: {
-    flex: 1,
-  },
-  prodTitle: {
-    color: '#E2E8F0',
-    fontSize: 13,
-    fontWeight: '700',
-    marginBottom: 2,
-  },
-  prodDesc: {
-    color: '#475569',
-    fontSize: 11,
-    lineHeight: 16,
-  },
-  prodIndex: {
-    alignSelf: 'center',
-    flexShrink: 0,
-  },
-  prodIndexText: {
-    color: '#1A3530',
-    fontSize: 14,
-    fontWeight: '800',
   },
 });

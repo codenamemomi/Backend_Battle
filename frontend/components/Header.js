@@ -1,8 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
-export default function Header({ isConnected, checkingConnection, onCheckConnection, onOpenSettings }) {
+export default function Header({ onOpenSettings }) {
   return (
     <View style={styles.header}>
       <View style={styles.titleRow}>
@@ -14,22 +14,6 @@ export default function Header({ isConnected, checkingConnection, onCheckConnect
       </View>
 
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={[styles.statusPill, { borderColor: isConnected ? '#10B981' : '#F43F5E' }]}
-          onPress={onCheckConnection}
-        >
-          {checkingConnection ? (
-            <ActivityIndicator size="small" color="#06B6D4" />
-          ) : (
-            <>
-              <View style={[styles.dot, { backgroundColor: isConnected ? '#10B981' : '#F43F5E' }]} />
-              <Text style={[styles.statusLabel, { color: isConnected ? '#10B981' : '#F43F5E' }]}>
-                {isConnected ? 'LIVE' : 'DOWN'}
-              </Text>
-            </>
-          )}
-        </TouchableOpacity>
-
         <TouchableOpacity style={styles.settingsBtn} onPress={onOpenSettings}>
           <Ionicons name="settings-outline" size={22} color="#94A3B8" />
         </TouchableOpacity>
@@ -74,26 +58,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-  },
-  statusPill: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    gap: 6,
-    backgroundColor: 'rgba(15, 23, 42, 0.6)',
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  statusLabel: {
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 1,
   },
   settingsBtn: {
     padding: 4,

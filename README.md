@@ -42,6 +42,16 @@ The application is structured as a decoupled backend API and frontend web client
 
 ---
 
+## 📡 API Endpoints
+*   `POST /submit`: Register and queue a benchmark simulation run.
+*   `GET /results`: List recent simulation runs.
+*   `GET /results/{id}`: Fetch detailed metrics for a specific run.
+*   `DELETE /results/{id}`: Delete a specific benchmark run.
+*   `GET /leaderboard`: Retrieve completed benchmark runs sorted by score.
+*   `DELETE /leaderboard`: Clear all leaderboard history and submissions.
+
+---
+
 ## 💯 Scoring & Grading System
 
 Scores are calculated out of **100 total points** based on the following algorithm:

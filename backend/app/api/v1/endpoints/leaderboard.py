@@ -1,15 +1,30 @@
 from typing import List
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select, delete
 
 from app.models.schemas import BenchmarkResult, BenchmarkStatus
-from app.db.in_memory import benchmark_results
+from app.db.session import get_db
+from app.models.database import DBBenchmarkResult, DBSubmission
 
 router = APIRouter()
 
 @router.get("/leaderboard", response_model=List[BenchmarkResult])
-def get_leaderboard(limit: int = 20):
-    completed = [
-        r for r in benchmark_results.values()
-        if r.status == BenchmarkStatus.COMPLETED and r.score is not None
-    ]
-    return sorted(completed, key=lambda r: r.score, reverse=True)[:limit]
+async def get_leaderboard(limit: int = 20, db: AsyncSession = Depends(get_db)):
+    stmt = (
+        select(DBBenchmarkResult)
+        .where(DBBenchmarkResult.status == BenchmarkStatus.COMPLETED)
+        .where(DBBenchmarkResult.score.isnot(None))
+        .order_by(DBBenchmarkResult.score.desc())
+        .limit(limit)
+    )
+    results = (await db.execute(stmt)).scalars().all()
+    return results
+
+@router.delete("/leaderboard")
+async def clear_leaderboard(db: AsyncSession = Depends(get_db)):
+    # Clear both tables
+    await db.execute(delete(DBBenchmarkResult))
+    await db.execute(delete(DBSubmission))
+    await db.commit()
+    return {"message": "Leaderboard cleared"}

@@ -4,6 +4,7 @@ import statistics
 from datetime import datetime
 from typing import List
 import httpx
+from sqlalchemy import select
 
 from app.models.schemas import (
     APISubmission,
@@ -11,7 +12,8 @@ from app.models.schemas import (
     RequestMetric,
     BenchmarkStatus,
 )
-from app.db.in_memory import benchmark_results
+from app.db.session import async_session
+from app.models.database import DBBenchmarkResult
 
 async def run_single_request(
     client: httpx.AsyncClient,
@@ -74,8 +76,14 @@ def compute_score(avg_latency: float, p95_latency: float, success_rate: float, r
 
 
 async def run_benchmark(result_id: str, submission: APISubmission, config: BenchmarkConfig):
-    result = benchmark_results[result_id]
-    result.status = BenchmarkStatus.RUNNING
+    # Set status to running
+    async with async_session() as db:
+        stmt = select(DBBenchmarkResult).where(DBBenchmarkResult.id == result_id)
+        db_res = (await db.execute(stmt)).scalar_one_or_none()
+        if not db_res:
+            return
+        db_res.status = BenchmarkStatus.RUNNING
+        await db.commit()
 
     metrics: List[RequestMetric] = []
     start_wall = time.perf_counter()
@@ -128,22 +136,32 @@ async def run_benchmark(result_id: str, submission: APISubmission, config: Bench
             max_lat = None
             score = 0.0
 
-        result.avg_latency_ms = avg_lat
-        result.p50_latency_ms = p50
-        result.p95_latency_ms = p95
-        result.p99_latency_ms = p99
-        result.min_latency_ms = min_lat
-        result.max_latency_ms = max_lat
-        result.success_rate = success_rate
-        result.requests_per_second = rps
-        result.total_successful = len(successful)
-        result.total_failed = len(failed)
-        result.score = score
-        result.grade = compute_grade(score)
-        result.status = BenchmarkStatus.COMPLETED
-        result.completed_at = datetime.utcnow().isoformat()
+        async with async_session() as db:
+            stmt = select(DBBenchmarkResult).where(DBBenchmarkResult.id == result_id)
+            db_res = (await db.execute(stmt)).scalar_one_or_none()
+            if db_res:
+                db_res.avg_latency_ms = avg_lat
+                db_res.p50_latency_ms = p50
+                db_res.p95_latency_ms = p95
+                db_res.p99_latency_ms = p99
+                db_res.min_latency_ms = min_lat
+                db_res.max_latency_ms = max_lat
+                db_res.success_rate = success_rate
+                db_res.requests_per_second = rps
+                db_res.total_successful = len(successful)
+                db_res.total_failed = len(failed)
+                db_res.score = score
+                db_res.grade = compute_grade(score)
+                db_res.status = BenchmarkStatus.COMPLETED
+                db_res.completed_at = datetime.utcnow().isoformat()
+                await db.commit()
 
     except Exception as e:
-        result.status = BenchmarkStatus.FAILED
-        result.error_message = str(e)[:300]
-        result.completed_at = datetime.utcnow().isoformat()
+        async with async_session() as db:
+            stmt = select(DBBenchmarkResult).where(DBBenchmarkResult.id == result_id)
+            db_res = (await db.execute(stmt)).scalar_one_or_none()
+            if db_res:
+                db_res.status = BenchmarkStatus.FAILED
+                db_res.error_message = str(e)[:300]
+                db_res.completed_at = datetime.utcnow().isoformat()
+                await db.commit()

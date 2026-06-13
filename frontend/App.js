@@ -26,6 +26,8 @@ import {
   deleteBenchmarkResult,
   getBackendUrl,
   setBackendUrl,
+  getApiKey,
+  setApiKey,
   testConnection,
 } from './api';
 
@@ -36,6 +38,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('battleground');
   const [backendUrl, setBackendUrlState] = useState(getBackendUrl());
   const [tempUrl, setTempUrl] = useState(getBackendUrl());
+  const [apiKey, setApiKeyState] = useState(getApiKey());
+  const [tempApiKey, setTempApiKey] = useState(getApiKey());
   const [showSettings, setShowSettings] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [checkingConnection, setCheckingConnection] = useState(false);
@@ -122,23 +126,22 @@ export default function App() {
     if (activeRuns.length === 0) return;
 
     const interval = setInterval(async () => {
-      let anyUpdated = false;
       const nextRuns = await Promise.all(
         recentRuns.map(async (run) => {
           if (run.status === 'pending' || run.status === 'running') {
             try {
-              const fresh = await getBenchmarkResult(run.id);
-              anyUpdated = true;
-              return fresh;
+              return await getBenchmarkResult(run.id);
             } catch (e) {
-              console.error(e);
+              // 404 or network error — treat as failed so polling stops
+              return { ...run, status: 'failed', error_message: 'Lost contact with server' };
             }
           }
           return run;
         })
       );
 
-      if (anyUpdated) {
+      const anyChanged = nextRuns.some((nr, idx) => nr.status !== recentRuns[idx]?.status);
+      if (anyChanged) {
         setRecentRuns(nextRuns);
         const completedTransitions = nextRuns.some(
           (nr, idx) =>
@@ -154,6 +157,8 @@ export default function App() {
   const handleSaveSettings = async () => {
     setBackendUrl(tempUrl);
     setBackendUrlState(tempUrl);
+    setApiKey(tempApiKey);
+    setApiKeyState(tempApiKey);
     setShowSettings(false);
     setCheckingConnection(true);
     const connected = await testConnection();
@@ -253,9 +258,6 @@ export default function App() {
       <LinearGradient colors={['#080C14', '#0D1F1A', '#0A1628']} style={styles.background}>
 
         <Header
-          isConnected={isConnected}
-          checkingConnection={checkingConnection}
-          onCheckConnection={checkBackendConnection}
           onOpenSettings={() => setShowSettings(true)}
         />
 
@@ -328,6 +330,8 @@ export default function App() {
           visible={showSettings}
           tempUrl={tempUrl}
           onChangeTempUrl={setTempUrl}
+          tempApiKey={tempApiKey}
+          onChangeTempApiKey={setTempApiKey}
           onSave={handleSaveSettings}
           onClose={() => setShowSettings(false)}
         />

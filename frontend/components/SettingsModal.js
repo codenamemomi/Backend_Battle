@@ -2,7 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
-export default function SettingsModal({ visible, tempUrl, onChangeTempUrl, onSave, onClose }) {
+export default function SettingsModal({ visible, tempUrl, onChangeTempUrl, tempApiKey, onChangeTempApiKey, onSave, onClose }) {
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
       <View style={styles.overlay}>
@@ -30,6 +30,24 @@ export default function SettingsModal({ visible, tempUrl, onChangeTempUrl, onSav
             <Text style={styles.hintText}>
               On a physical device via Expo Go, use your machine's LAN IP instead of localhost.
               {'\n'}Example: <Text style={styles.hintCode}>http://192.168.1.100:8000</Text>
+            </Text>
+          </View>
+
+          <Text style={styles.label}>API Key</Text>
+          <TextInput
+            style={styles.input}
+            value={tempApiKey}
+            onChangeText={onChangeTempApiKey}
+            autoCapitalize="none"
+            autoCorrect={false}
+            secureTextEntry={false}
+            placeholder="Enter your X-API-Key"
+            placeholderTextColor="#334155"
+          />
+          <View style={[styles.hintBox, { marginBottom: 18 }]}>
+            <Ionicons name="key-outline" size={14} color="#0E7490" />
+            <Text style={styles.hintText}>
+              Must match a key in the backend <Text style={styles.hintCode}>API_KEYS</Text> environment variable.
             </Text>
           </View>
 
