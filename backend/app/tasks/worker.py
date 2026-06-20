@@ -40,6 +40,15 @@ if IS_TLS:
 
 celery_app.conf.update(**base_conf)
 
+from celery.signals import worker_process_init
+
+@worker_process_init.connect
+def init_worker_process(**kwargs):
+    import asyncio
+    from app.db.session import engine
+    asyncio.run(engine.dispose())
+
+
 
 @celery_app.task(name="run_benchmark_task")
 def run_benchmark_task(result_id: str, submission_dict: dict, config_dict: dict):

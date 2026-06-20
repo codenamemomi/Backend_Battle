@@ -1,5 +1,5 @@
-let BACKEND_URL = 'http://localhost:8000';
-let API_KEY = 'dev_key_123'; // matches default .env API_KEYS
+let BACKEND_URL = (process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8000').replace(/\/$/, '');
+let API_KEY = process.env.EXPO_PUBLIC_API_KEY || 'dev_key_123';
 
 export function setBackendUrl(url) {
   if (!url) return;
@@ -102,8 +102,8 @@ export async function listBenchmarkResults(limit = 50) {
   return await request(`/results?limit=${limit}`);
 }
 
-export async function getLeaderboard(limit = 20) {
-  return await request(`/leaderboard?limit=${limit}`);
+export async function getLeaderboard(limit = 20, period = 'all') {
+  return await request(`/leaderboard?limit=${limit}&period=${period}`);
 }
 
 export async function clearLeaderboard() {

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, ActivityIndicator, Dimensions } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
 
@@ -69,21 +69,11 @@ export default function LeaderboardTab({
 }) {
   const [timeFilter, setTimeFilter] = useState('Week'); // Today, Week, Month
 
-  // Filter leaderboardData based on the created_at timestamp
-  const filteredData = useMemo(() => {
-    const now = new Date();
-    return leaderboardData.filter((item) => {
-      if (!item.created_at) return true;
-      const created = new Date(item.created_at);
-      const diffTime = Math.abs(now - created);
-      const diffDays = diffTime / (1000 * 60 * 60 * 24);
+  useEffect(() => {
+    onFetchLeaderboard(timeFilter.toLowerCase());
+  }, [timeFilter]);
 
-      if (timeFilter === 'Today') return diffDays <= 1;
-      if (timeFilter === 'Week') return diffDays <= 7;
-      if (timeFilter === 'Month') return diffDays <= 30;
-      return true;
-    });
-  }, [leaderboardData, timeFilter]);
+  const filteredData = leaderboardData;
 
   // Find the user's best run in the full leaderboard list to show in the sticky footer
   const userBestRun = useMemo(() => {
@@ -126,7 +116,7 @@ export default function LeaderboardTab({
         <Text style={styles.sectionTitle}>
           <Text style={styles.sectionAccent}>// </Text>HALL OF FAME
         </Text>
-        <TouchableOpacity onPress={onFetchLeaderboard} style={styles.refreshBtn}>
+        <TouchableOpacity onPress={() => onFetchLeaderboard(timeFilter.toLowerCase())} style={styles.refreshBtn}>
           <Ionicons name="refresh" size={14} color="#A78BFA" />
           <Text style={styles.refreshBtnText}>REFRESH</Text>
         </TouchableOpacity>

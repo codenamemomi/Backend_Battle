@@ -1,8 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { StyleSheet, Text, View } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-export default function Header({ onOpenSettings }) {
+export default function Header() {
   return (
     <View style={styles.header}>
       <View style={styles.titleRow}>
@@ -11,12 +11,6 @@ export default function Header({ onOpenSettings }) {
           <Text style={styles.headerTitle}>BACKEND BATTLE</Text>
           <Text style={styles.headerSub}>API Performance Arena</Text>
         </View>
-      </View>
-
-      <View style={styles.actions}>
-        <TouchableOpacity style={styles.settingsBtn} onPress={onOpenSettings}>
-          <Ionicons name="settings-outline" size={22} color="#94A3B8" />
-        </TouchableOpacity>
       </View>
     </View>
   );
@@ -53,13 +47,5 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     letterSpacing: 1.5,
     marginTop: 1,
-  },
-  actions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  settingsBtn: {
-    padding: 4,
   },
 });

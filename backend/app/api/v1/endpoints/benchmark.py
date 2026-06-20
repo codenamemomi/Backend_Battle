@@ -2,7 +2,7 @@ import os
 import uuid
 from datetime import datetime
 from typing import List
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Security, status, Request
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Depends, Security, status, Request, Query
 from fastapi.security.api_key import APIKeyHeader
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
@@ -46,11 +46,16 @@ async def submit_api(
     request: Request,
     submission: APISubmission,
     background_tasks: BackgroundTasks,
-    concurrent_users: int = 10,
-    total_requests: int = 50,
+    concurrent_users: int = Query(10, gt=0, le=50),
+    total_requests: int = Query(50, gt=0, le=200),
     db: AsyncSession = Depends(get_db),
     api_key: str = Depends(get_api_key),
 ):
+    if total_requests < concurrent_users:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="total_requests must be greater than or equal to concurrent_users",
+        )
     sub_id = str(uuid.uuid4())
     result_id = str(uuid.uuid4())
 
@@ -120,6 +125,14 @@ async def delete_result(result_id: str, db: AsyncSession = Depends(get_db), api_
     if not result:
         raise HTTPException(404, "Result not found")
     
+    submission_id = result.submission_id
     await db.delete(result)
+    
+    # Also delete associated DBSubmission
+    sub_stmt = select(DBSubmission).where(DBSubmission.id == submission_id)
+    sub = (await db.execute(sub_stmt)).scalar_one_or_none()
+    if sub:
+        await db.delete(sub)
+        
     await db.commit()
     return {"message": "Deleted"}

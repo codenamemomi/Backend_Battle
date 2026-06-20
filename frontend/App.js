@@ -13,7 +13,6 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 
 import Header from './components/Header';
-import SettingsModal from './components/SettingsModal';
 import BattlegroundTab from './components/BattlegroundTab';
 import LeaderboardTab from './components/LeaderboardTab';
 import InfoTab from './components/InfoTab';
@@ -24,11 +23,9 @@ import {
   listBenchmarkResults,
   getLeaderboard,
   deleteBenchmarkResult,
-  getBackendUrl,
-  setBackendUrl,
-  getApiKey,
-  setApiKey,
   testConnection,
+  getBackendUrl,
+  getApiKey,
 } from './api';
 
 const { width } = Dimensions.get('window');
@@ -86,7 +83,7 @@ export default function App() {
       setLoadingList(false);
     }
     try {
-      const lb = await getLeaderboard(20);
+      const lb = await getLeaderboard(20, 'week');
       setLeaderboardData(lb);
     } catch (e) {
       console.warn('Failed to fetch leaderboard', e);
@@ -107,10 +104,10 @@ export default function App() {
     }
   };
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = async (period = 'week') => {
     setLoadingLeaderboard(true);
     try {
-      const lb = await getLeaderboard(20);
+      const lb = await getLeaderboard(20, period);
       setLeaderboardData(lb);
     } catch (e) {
       console.warn(e);
@@ -257,9 +254,7 @@ export default function App() {
       <StatusBar barStyle="light-content" />
       <LinearGradient colors={['#080C14', '#0D1F1A', '#0A1628']} style={styles.background}>
 
-        <Header
-          onOpenSettings={() => setShowSettings(true)}
-        />
+        <Header />
 
         {/* TAB BAR */}
         <View style={styles.tabsContainer}>
@@ -325,16 +320,6 @@ export default function App() {
           </View>
           <View style={{ height: 50 }} />
         </ScrollView>
-
-        <SettingsModal
-          visible={showSettings}
-          tempUrl={tempUrl}
-          onChangeTempUrl={setTempUrl}
-          tempApiKey={tempApiKey}
-          onChangeTempApiKey={setTempApiKey}
-          onSave={handleSaveSettings}
-          onClose={() => setShowSettings(false)}
-        />
 
       </LinearGradient>
     </SafeAreaView>
