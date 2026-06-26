@@ -18,6 +18,7 @@ from app.db.session import engine, Base, async_session
 from app.models.database import DBSubmission, DBBenchmarkResult
 from app.services.benchmark import run_benchmark
 from app.api.v1.endpoints.benchmark import limiter
+from app.healthcheck import run_periodic_healthcheck
 
 async def seed_demo():
     await asyncio.sleep(2)  # wait for tables to create and server start
@@ -74,6 +75,7 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
     
     asyncio.create_task(seed_demo())
+    asyncio.create_task(run_periodic_healthcheck())
     yield
 
 
@@ -98,6 +100,10 @@ app.add_middleware(
 @app.get("/")
 def root():
     return {"message": "Backend Battle API", "docs": "/docs"}
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
 
 # Include v1 router with no prefix to match original endpoint signatures
 app.include_router(api_router)
